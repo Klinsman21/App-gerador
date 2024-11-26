@@ -7,34 +7,34 @@ import os
 app = Flask(__name__)
 
 # Variável global para armazenar o caminho do arquivo CSV
-csv_file = None
+csv_file = "/cenarios/cenarios.csv"
 
 UPLOAD_FOLDER = "cenarios"  # Pasta para salvar os arquivos carregados
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-@app.route("/upload_csv", methods=["POST"])
-def upload_csv():
-    global csv_file
-
-    if "file" not in request.files:
-        print("redirect 1")
-        return redirect("/")  # Volta para a página inicial se nenhum arquivo for enviado
-
-    file = request.files["file"]
-
-    if file.filename == "":
-        print("redirect 2")
-        return redirect("/")  # Volta para a página inicial se nenhum arquivo for selecionado
-
-    if file:
-        print("file set")
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(file_path)
-        csv_file = file_path  # Define o arquivo CSV carregado como o ativo
-        return redirect("/")
+# @app.route("/upload_csv", methods=["POST"])
+# def upload_csv():
+#     global csv_file
+#
+#     if "file" not in request.files:
+#         print("redirect 1")
+#         return redirect("/")  # Volta para a página inicial se nenhum arquivo for enviado
+#
+#     file = request.files["file"]
+#
+#     if file.filename == "":
+#         print("redirect 2")
+#         return redirect("/")  # Volta para a página inicial se nenhum arquivo for selecionado
+#
+#     if file:
+#         print("file set")
+#         filename = secure_filename(file.filename)
+#         file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+#         file.save(file_path)
+#         csv_file = file_path  # Define o arquivo CSV carregado como o ativo
+#         return redirect("/")
 
 
 # Função para gerar um cenário
@@ -91,10 +91,15 @@ def gerar_cenario():
 @app.route("/")
 def index():
     contador_cenarios = 0
-    if csv_file:
-        with open(csv_file, mode="r") as f:
+    try:
+        with open("cenarios.csv", mode="r") as f:
             contador_cenarios = sum(1 for row in csv.reader(f)) - 1  # Subtrair o cabeçalho
-    return render_template("index.html", csv_file=csv_file, cenario=None, contador_cenarios=contador_cenarios)
+    except FileNotFoundError:
+        with open("cenarios.csv", mode="w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Distância", "Bateria", "Satélites", "Sinal", "Obstáculos", "Status"])
+    finally:
+        return render_template("index.html", csv_file=csv_file, cenario=None, contador_cenarios=contador_cenarios)
 
 
 @app.route("/gerar_cenario_rota", methods=["POST"])
@@ -110,15 +115,6 @@ def salvar_cenario():
     global csv_file
     print("salvando")
 
-    # Verifique se um arquivo foi carregado ou se há um arquivo ativo
-    if not csv_file:
-        filename = secure_filename("cenarios.csv")
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        csv_file = file_path  # Define o arquivo CSV carregado como o ativo
-        with open(csv_file, mode="w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Distância", "Bateria", "Satélites", "Sinal", "Obstáculos", "Status"])
-
     # Obtenha os dados do formulário
     distancia = request.form["distancia"]
     bateria = request.form["bateria"]
@@ -131,7 +127,7 @@ def salvar_cenario():
     cenario = [int(distancia), int(bateria), int(satelites), int(sinal), int(obstaculos), int(status)]
 
     # Adiciona o cenário ao arquivo CSV
-    with open(csv_file, mode="a", newline="") as file:
+    with open("cenarios.csv", mode="a", newline="") as file:
         print("add")
         writer = csv.writer(file)
         writer.writerow(cenario)  # Adiciona uma nova linha com os dados do cenário
