@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Cenários</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <h1 class="text-center">Gerenciamento de Cenários</h1>
+    <hr class="my-4">
+
+    <p class="text-center">
+        <strong>Cenários no arquivo atual:</strong> {{ contador_cenarios }}
+    </p>
+
+    <!-- Formulário para carregar o arquivo CSV -->
+    <div class="d-flex justify-content-center mb-4">
+        <form action="/upload_csv" method="POST" enctype="multipart/form-data" class="d-flex gap-3">
+            <input type="file" name="file" class="form-control" accept=".csv">
+            <button type="submit" class="btn btn-primary">Carregar Arquivo CSV</button>
+        </form>
+    </div>
+
+    <!-- Botão para gerar novo cenário -->
+    <div class="text-center mb-4">
+        <form action="/gerar_cenario_rota" method="POST">
+            <button type="submit" class="btn btn-success">Gerar Novo Cenário</button>
+        </form>
+    </div>
+
+    <!-- Exibir o cenário gerado para edição -->
+    {% if cenario %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-center">Cenário Gerado</h5>
+                <form action="/salvar_cenario" method="POST" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="distancia" class="form-label">Distância (m)</label>
+                        <input type="number" class="form-control" id="distancia" name="distancia" value="{{ cenario[0] }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="bateria" class="form-label">Bateria (%)</label>
+                        <input type="number" class="form-control" id="bateria" name="bateria" value="{{ cenario[1] }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="satelites" class="form-label">Satélites</label>
+                        <input type="number" class="form-control" id="satelites" name="satelites" value="{{ cenario[2] }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="sinal" class="form-label">Sinal (%)</label>
+                        <input type="number" class="form-control" id="sinal" name="sinal" value="{{ cenario[3] }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="obstaculos" class="form-label">Obstáculos</label>
+                        <select class="form-select" id="obstaculos" name="obstaculos">
+                            <option value="0" {% if cenario[4] == 0 %}selected{% endif %}>Não</option>
+                            <option value="1" {% if cenario[4] == 1 %}selected{% endif %}>Sim</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="0" {% if cenario[5] == 0 %}selected{% endif %}>Normal</option>
+                            <option value="1" {% if cenario[5] == 1 %}selected{% endif %}>Retornar ao ponto de origem</option>
+                            <option value="2" {% if cenario[5] == 2 %}selected{% endif %}>Retornar à última coordenada com sinal forte</option>
+                            <option value="3" {% if cenario[5] == 3 %}selected{% endif %}>Pouso de emergência</option>
+                            <option value="4" {% if cenario[5] == 4 %}selected{% endif %}>Corrigir a rota</option>
+                            <option value="5" {% if cenario[5] == 5 %}selected{% endif %}>Modo manual</option>
+                        </select>
+                    </div>
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-primary">Salvar Cenário</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
