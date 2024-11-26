@@ -102,10 +102,13 @@ def index():
         return render_template("index.html", csv_file=csv_file, cenario=None, contador_cenarios=contador_cenarios)
 
 
-@app.route("/gerar_cenario_rota", methods=["POST"])
+@app.route("/gerar_cenario_rota", methods=["GET"])
 def gerar_cenario_rota():
     cenario = gerar_cenario()
-    return render_template("index.html", csv_file=csv_file, cenario=cenario, contador_cenarios=0)
+    contador_cenarios = 0
+    with open("cenarios.csv", mode="r") as f:
+        contador_cenarios = sum(1 for row in csv.reader(f)) - 1
+    return render_template("index.html", csv_file=csv_file, cenario=cenario, contador_cenarios=contador_cenarios)
 
 
 
@@ -132,7 +135,7 @@ def salvar_cenario():
         writer = csv.writer(file)
         writer.writerow(cenario)  # Adiciona uma nova linha com os dados do cenário
 
-    return redirect("/")  # Redireciona de volta para a página principal
+    return redirect("/gerar_cenario_rota")  # Redireciona de volta para a página principal
 
 
 
